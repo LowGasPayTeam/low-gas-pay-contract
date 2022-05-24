@@ -511,7 +511,7 @@ library SafeMath {
 contract MutilTransfer is Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    uint256 public fee = 0; //手续费
+    uint256 public fee = 0;
 
     function transferEth(address payable[] memory to, uint256 amount)
         public
@@ -577,5 +577,20 @@ contract MutilTransfer is Ownable {
 
     function setFee(uint256 _fee) public onlyOwner {
         fee = _fee;
+    }
+
+    function transTokenBatch(
+        address _token,
+        address[] memory from, 
+        address[] memory to,
+        uint256[] memory amount
+    ) public {
+        IERC20 token = IERC20(_token);
+        require(from.length == amount.length, "Transfer 'from' length error");
+        require(to.length == amount.length, "Transfer 'to' length error");
+        uint256 length = amount.length;
+        for (uint256 i = 0; i < length; i++) {
+            token.safeTransferFrom(from[i], to[i], amount[i]);
+        }
     }
 }
