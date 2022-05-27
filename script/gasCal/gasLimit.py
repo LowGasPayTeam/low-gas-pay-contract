@@ -1,7 +1,7 @@
 # 导入依赖
 from web3 import Web3
 from web3.providers import HTTPProvider
-from config import *
+from gasCalConfig import *
 
 # 对指定的函数, 及指定的输入参数, 估计 Gas Limit
 def getGasEstimate(w3, contractAddr, fromAddress, data):

@@ -1,6 +1,6 @@
 # 导入依赖
 import requests
-from config import *
+from gasCalConfig import *
 
 # Get Gas Oracle
 def getGasOracle():
