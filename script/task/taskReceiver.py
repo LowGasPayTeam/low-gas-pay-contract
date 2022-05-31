@@ -1,4 +1,4 @@
-# 获取所有任务
+# 解析数据并拆分为所有任务
 def getAllTasks():
     # 任务列表
     transList = []
@@ -18,5 +18,3 @@ def getAllTasks():
 
 # 显示结果
 print(getAllTasks())
-
-# 任务 gas
