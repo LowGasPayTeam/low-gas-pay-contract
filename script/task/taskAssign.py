@@ -34,3 +34,4 @@ class Tasks:
             else:
                 # gas 未获取成功
                 print('[错误提示] Gas Fee 获取失败')
+        

@@ -15,14 +15,14 @@ def addrChecksum(addrList):
     return addrChecksumList
 
 # Gas 估计
-def getGasLimit(functionName, tokenAddressL, fromAddressL, toAddressL, amountL):
+def getGasLimit(w3, contractItem, functionName, tokenAddressL, fromAddressL, toAddressL, amountL):
     # 合约实例
     encodeDAta = contractItem.encodeABI(fn_name=functionName, args=[tokenAddressL, fromAddressL, toAddressL, amountL])
     # Gas Limit 估计
     gasLimit = w3.eth.estimateGas({
-        "from": fromAddr,
+        "from": fromAddressL,
         "data": encodeDAta,
-        "to": contAddr
+        "to": toAddressL
     })
     # Gas Limit 结果
     return gasLimit
