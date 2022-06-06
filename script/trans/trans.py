@@ -14,15 +14,16 @@ def addrChecksum(addrList):
     # 返回结果
     return addrChecksumList
 
-# Gas 估计
-def getGasLimit(w3, contractItem, functionName, tokenAddressL, fromAddressL, toAddressL, amountL):
+# Gas Limit 估计
+def getGasLimit(w3, contractItem, functionName, argInput, ethValue, fromAddress, toAddress):
     # 合约实例
-    encodeDAta = contractItem.encodeABI(fn_name=functionName, args=[tokenAddressL, fromAddressL, toAddressL, amountL])
+    encodeDAta = contractItem.encodeABI(fn_name=functionName, args=argInput)
     # Gas Limit 估计
     gasLimit = w3.eth.estimateGas({
-        "from": fromAddressL,
+        "from": fromAddress,
+        "to": toAddress,
         "data": encodeDAta,
-        "to": toAddressL
+        "value": Web3.toWei(ethValue, 'ether')
     })
     # Gas Limit 结果
     return gasLimit
@@ -70,6 +71,6 @@ if __name__ == '__main__':
     # 合约实例
     contractItem = w3.eth.contract(address=contAddr, abi=contAbi)
     # 计算 Gas
-    gasLimit = getGasLimit(funcName, tokenArg, fromArg, toArg, amountArg)
+    gasLimit = getGasLimit(w3, contractItem, funcName, [tokenArg, fromArg, toArg, amountArg], 0, fromAddr, contAddr)
     # 调用结果
     transBasic(w3, contractItem, funcName, tokenArg, fromArg, toArg, amountArg, chainId, gasPrice, gasLimit)
