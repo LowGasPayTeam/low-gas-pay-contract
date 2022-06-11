@@ -1,11 +1,13 @@
 # 路径维护依赖
 import sys
 # 路径维护
-sys.path.append('./gasCal/')
+sys.path.append('script/gasCal')
+sys.path.append('script/apiBackend')
 
 # 获取依赖
 import time
 from gasTracker import *
+from apiRequest import *
 
 # 任务类
 class Tasks:
@@ -19,6 +21,8 @@ class Tasks:
         self.gasHigh = 0
         # Suggest Gas
         self.gasSuggest = 0
+        # 当前任务列表
+        self.taskList = []
 
     # 根据 Gas 分配任务
     def taskAssignByGas(self):
@@ -26,6 +30,8 @@ class Tasks:
         while True:
             # 等待延迟
             time.sleep(5)
+            # 获取任务列表
+            ordersL = getOrders()
             # 获取 Gas
             gasRes = getGasOracle()
             # 判断结果
@@ -38,6 +44,12 @@ class Tasks:
             else:
                 # gas 未获取成功
                 print('[错误提示] Gas Fee 获取失败')
+            # 对每个任务进行 Gas 区间判定
+            for i in range(len(ordersL)):
+                # 逐个判断
+                if (len(ordersL['transactions']) > 0):
+                    # 跳过
+                    pass
 
 # 主函数
 if __name__ == '__main__':
