@@ -4,7 +4,6 @@ import sys
 sys.path.append('./gasCal/')
 
 # 获取依赖
-from mimetypes import init
 import time
 from gasTracker import *
 

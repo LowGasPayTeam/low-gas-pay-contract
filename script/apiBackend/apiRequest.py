@@ -1,14 +1,24 @@
 # 导入依赖
+from msilib.schema import ODBCAttribute
 import requests
 
 # Get Orders
 def getOrders():
     # 获取 gas
-    response = requests.get('http://47.242.89.124:5000/api/v1/tokens?page=1&size=10&address=0x51A39C80Da2B7Ef85B5170Dd6F932F9Ecb767710').json()
+    response = requests.get('http://47.242.89.124:5000/api/v1/tokens?status=Created').json()
     # 返回结果
     return response
 
+# 解析结果
+def parseOrders(rawOrders):
+    # 获取 Orders 内容
+    orderList = rawOrders['data']['orders']
+    # 返回结果
+    return orderList
+
 # 显示结果
-orders = getOrders()
+ordersL = getOrders()
+# 结果
+orders = parseOrders(ordersL)
 # 判断结果
 print(orders)
