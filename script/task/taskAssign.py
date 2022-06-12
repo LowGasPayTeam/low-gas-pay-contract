@@ -82,7 +82,6 @@ class Tasks:
             finally:
                 # 释放锁
                 self.lock.release()
-        
 
 # 主函数
 if __name__ == '__main__':
