@@ -66,8 +66,23 @@ class Tasks:
                 # 释放锁
                 self.lock.release()
     
-    # 任务执行
-    def 
+    # 录入任务
+    def inputTrans(self):
+        # 循环获取 Gas
+        while True:
+            # 等待延迟
+            time.sleep(5)
+            # 加锁
+            self.lock.acquire()
+            # 尝试任务分配
+            try:
+                # 
+                pass
+            # 解锁
+            finally:
+                # 释放锁
+                self.lock.release()
+        
 
 # 主函数
 if __name__ == '__main__':
