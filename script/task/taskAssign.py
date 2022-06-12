@@ -3,11 +3,16 @@ import sys
 # 路径维护
 sys.path.append('script/gasCal')
 sys.path.append('script/apiBackend')
+sys.path.append('script/trans')
 
 # 获取依赖
 import time
 from gasTracker import *
 from apiRequest import *
+from taskConfig import *
+from transWithGas import *
+from web3 import Web3
+from web3.providers import HTTPProvider
 import threading
 
 # 任务类
@@ -26,13 +31,15 @@ class Tasks:
         self.gasSuggest = 0
         # 当前任务列表
         self.taskList = []
+        # 任务发出者字典集
+        self.taskOwner = {}
 
-    # 根据 Gas 分配任务
+    # 根据 Gas 分配任务: 从总的任务中提取到满足 Gas Fee 的任务到任务列表, 并设为 Pending 状态
     def taskAssignByGas(self):
         # 循环获取 Gas
         while True:
             # 等待延迟
-            time.sleep(5)
+            time.sleep(taskLoopDelay)
             # 加锁
             self.lock.acquire()
             # 尝试任务分配
@@ -58,7 +65,7 @@ class Tasks:
                         # 逐个判断
                         if (len(ordersL[i]['transactions']) > 0):
                             # 添加到任务列表
-                            self.taskList.append(ordersL[i]['transactions'])
+                            self.taskList.append(ordersL[i])
                             # 设置 transactions status
                             # 等待 API 接口
             # 解锁
@@ -66,22 +73,61 @@ class Tasks:
                 # 释放锁
                 self.lock.release()
     
-    # 录入任务
+    # 任务列表地址数统计
+    def taskCount(self):
+        # 加锁
+        self.lock.acquire()
+        # 尝试
+        try:
+            # 地址数目统计
+            for i in range(len(self.taskList)):
+                # 地址统计
+                self.taskCount[self.taskList[i]['order_create_addr']] += len(self.taskList[i]['transactions'])
+        # 解锁
+        finally:
+            # 释放锁
+            self.lock.release()
+    
+    # 无充值转账任务: 将需要完成的任务按照任务比例分配 Gas
     def inputTrans(self):
         # 循环获取 Gas
         while True:
             # 等待延迟
-            time.sleep(5)
+            time.sleep(taskLoopDelay)
             # 加锁
             self.lock.acquire()
             # 尝试任务分配
             try:
-                # 
-                pass
+                # 构造 web3 实例
+                w3 = Web3(HTTPProvider(taskEndpointHttp))
+                # 合约实例
+                contractItem = w3.eth.contract(address=taskContAddr, abi=taskContAbi)
+                # 逐个订单打包
+                for i in range(len(self.taskList)):
+                    # 计算 Gas
+                    gasLimit = getGasLimit(w3, contractItem, taskFuncName, [inputTokenArg, inputFromArg, inputToArg, inputAmountArg], 0, taskFromAddr, taskContAddr)
+                    # 调用结果
+                    transBasic(w3, contractItem, taskFuncName, inputTokenArg, inputFromArg, inputToArg, inputAmountArg, taskChainId, gasPrice, gasLimit)
             # 解锁
             finally:
                 # 释放锁
                 self.lock.release()
+    
+    # 清空任务列表 任务字典
+    def cleanTask(self):
+        # 加锁
+        self.lock.acquire()
+        # 尝试
+        try:
+            # 清空任务列表
+            self.taskList = []
+            # 清空任务字典
+            self.taskOwner = {}
+        # 解锁
+        finally:
+            # 释放锁
+            self.lock.release()
+        
 
 # 主函数
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 {
     "python.analysis.extraPaths": [
         "./script/gasCal",
-        "./script/apiBackend"
+        "./script/apiBackend",
+        "./script/trans"
     ]
 }
