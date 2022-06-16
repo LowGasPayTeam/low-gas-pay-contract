@@ -38,3 +38,6 @@ taskGasLimit = 500000
 taskNonce = 0
 # 交易 ETH 数目
 taskValue = 0
+
+# 循环间隔
+taskLoopDelay = 3
