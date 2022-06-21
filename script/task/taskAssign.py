@@ -67,7 +67,7 @@ class Tasks:
                             # 添加到任务列表
                             self.taskList.append(ordersL[i])
                             # 设置 transactions status
-                            # 等待 API 接口
+                            # 
             # 解锁
             finally:
                 # 释放锁

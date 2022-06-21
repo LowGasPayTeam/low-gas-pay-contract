@@ -21,15 +21,15 @@ def getGasLevel(gasResult):
     return float(gasResult['SafeGasPrice']), float(gasResult['ProposeGasPrice']), float(gasResult['FastGasPrice']), float(gasResult['suggestBaseFee'])
 
 
-# # 显示结果
-# gasRes = getGasOracle()
-# # 判断结果
-# if gasRes is not None:
-#     # 返回低中高
-#     low, medium, high, suggest = getGasLevel(gasRes)
-#     # 显示结果
-#     print('[成功提示] Gas Fee 获取成功: Low: {0}, Medium: {1}, High: {2}, Suggest: {3}'.format(low, medium, high, suggest))
-# # 显示错误
-# else:
-#     # gas 未获取成功
-#     print('[错误提示] Gas Fee 获取失败')
+# 显示结果
+gasRes = getGasOracle()
+# 判断结果
+if gasRes is not None:
+    # 返回低中高
+    low, medium, high, suggest = getGasLevel(gasRes)
+    # 显示结果
+    print('[成功提示] Gas Fee 获取成功: Low: {0}, Medium: {1}, High: {2}, Suggest: {3}'.format(low, medium, high, suggest))
+# 显示错误
+else:
+    # gas 未获取成功
+    print('[错误提示] Gas Fee 获取失败')
