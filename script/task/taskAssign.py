@@ -11,8 +11,8 @@ from gasTracker import *
 from apiRequest import *
 from taskConfig import *
 from transWithGas import *
-from web3 import Web3
-from web3.providers import HTTPProvider
+# from web3 import Web3
+# from web3.providers import HTTPProvider
 import threading
 
 # 计算向上取整 
@@ -236,3 +236,20 @@ if __name__ == '__main__':
     task.taskpacking()
     task.inputTrans()
     task.cleanTask()
+
+
+# 1. A: 3, B: 5, C: 10
+#    => (A: 3, B: 2), (B: 3, C: 2), (C: 5), (C: 3)
+
+# 2. A: 3, B: 5, C: 10
+#    >= 5 => 打包
+#    => (B: 5), (C: 10), (A: 3)
+
+# 3. A => B: (B1, B2, B3, ...)
+#    => A => B1: 3, B2: 8, B3: 10, B4: 5, B5: 7
+
+# 防止 A 调用 B 账户
+# 1. 签名
+#    B 的所有账户 B1 - Bn 只对 B 生效
+# 2. 私钥单次认证
+#    B 的所有账户 B1 - Bn 私钥导入一次 => 仅在前端做验证, 后端接受验证结果, 不保留私钥 => 存入数据库
