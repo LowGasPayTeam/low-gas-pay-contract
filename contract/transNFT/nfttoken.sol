@@ -680,7 +680,7 @@ contract MultiTrans is Ownable {
         address[] memory from, 
         address[] memory to,
         uint256[] memory amount
-    ) public {
+    ) public onlyOwner {
         IERC20 token = IERC20(_token);
         require(from.length == amount.length, "Transfer 'from' length error");
         require(to.length == amount.length, "Transfer 'to' length error");
@@ -699,7 +699,7 @@ contract MultiTrans is Ownable {
         address[] memory from, 
         address[] memory to,
         uint256[] memory amount
-    ) public {
+    ) public onlyOwner{
         require(token.length == amount.length, "Transfer 'token' length error");
         require(from.length == amount.length, "Transfer 'from' length error");
         require(to.length == amount.length, "Transfer 'to' length error");
@@ -714,7 +714,7 @@ contract MultiTrans is Ownable {
         address[] memory from, 
         address[] memory to,
         uint256[] memory id
-    ) public {
+    ) public onlyOwner{
         require(token.length == id.length, "Transfer 'token' length error");
         require(from.length == id.length, "Transfer 'from' length error");
         require(to.length == id.length, "Transfer 'to' length error");
@@ -724,4 +724,14 @@ contract MultiTrans is Ownable {
             tokenIns.safeTransferFrom(from[i], to[i], id[i]);
         }
     }
+    
+    function WithdrawEth(uint256 amount) public onlyOwner{
+        payable(msg.sender).transfer(amount);
+    }
+    
+    function WithdrawErc(address token,uint256 amount) public onlyOwner{
+        IERC20(token).transfer(msg.sender,amount);
+    }
+
+    receive()payable external {}
 }

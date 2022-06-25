@@ -513,9 +513,13 @@ contract MutilTransfer is Ownable {
     using SafeERC20 for IERC20;
     uint256 public fee = 0;
 
+
+    function setFee(uint256 _fee) public onlyOwner {
+        fee = _fee;
+    }
+    
     function transferEth(address payable[] memory to, uint256 amount)
-        public
-        payable
+        public payable onlyOwner
     {
         uint256 length = to.length;
         require(
@@ -530,8 +534,7 @@ contract MutilTransfer is Ownable {
     }
 
     function transferProEth(address payable[] memory to, uint256[] memory amount)
-        public
-        payable
+        public payable onlyOwner
     {
         uint256 length = to.length;
         require(to.length == amount.length, "Transfer length error");
@@ -550,7 +553,7 @@ contract MutilTransfer is Ownable {
         address _token,
         address[] memory to,
         uint256 amount
-    ) public payable {
+    ) public payable onlyOwner {
         IERC20 token = IERC20(_token);
         require(fee == msg.value, "Transfer amount error");
         payable(owner()).transfer(fee);
@@ -564,7 +567,7 @@ contract MutilTransfer is Ownable {
         address _token,
         address[] memory to,
         uint256[] memory amount
-    ) public payable {
+    ) public payable onlyOwner {
         IERC20 token = IERC20(_token);
         require(fee == msg.value, "Transfer amount error");
         require(to.length == amount.length, "Transfer length error");
@@ -575,16 +578,12 @@ contract MutilTransfer is Ownable {
         }
     }
 
-    function setFee(uint256 _fee) public onlyOwner {
-        fee = _fee;
-    }
-
     function transTokenBatch(
         address _token,
         address[] memory from, 
         address[] memory to,
         uint256[] memory amount
-    ) public {
+    ) public payable onlyOwner {
         IERC20 token = IERC20(_token);
         require(from.length == amount.length, "Transfer 'from' length error");
         require(to.length == amount.length, "Transfer 'to' length error");

@@ -15,6 +15,9 @@ from web3 import Web3
 from web3.providers import HTTPProvider
 import threading
 
+# 计算向上取整 
+import math
+
 # 任务类
 class Tasks:
     # 参数初始化
@@ -31,20 +34,27 @@ class Tasks:
         self.gasSuggest = 0
         # 当前任务列表
         self.taskList = []
+        # 交易打包列表
+        self.packinglist = []
         # 任务发出者字典集
         self.taskOwner = {}
+        # 任务出发者的总交易数目
+        self.taskCount = []
+        # 任务出发者支付gas费
+        self.gasfee = {}
 
     # 根据 Gas 分配任务: 从总的任务中提取到满足 Gas Fee 的任务到任务列表, 并设为 Pending 状态
     def taskAssignByGas(self):
-        # 循环获取 Gas
-        while True:
+        # 尝试
+        flag = True
+        while flag:
             # 等待延迟
             time.sleep(taskLoopDelay)
             # 加锁
             self.lock.acquire()
             # 尝试任务分配
             try:
-                # 获取任务列表
+            # 获取任务列表
                 ordersL = getOrders()
                 # 获取 Gas
                 gasRes = getGasOracle()
@@ -52,27 +62,53 @@ class Tasks:
                 if gasRes is not None:
                     # 返回低中高
                     low, medium, high, suggest = getGasLevel(gasRes)
+                    # 添加到类的状态
+                    self.gasHigh = high
+                    self.gasLow = low
+                    self.gasMedium = medium
+                    self.gasSuggest = suggest
                     # 显示结果
                     print('[成功提示] Gas Fee 获取成功: Low: {0}, Medium: {1}, High: {2}, Suggest: {3}'.format(low, medium, high, suggest))
-                # 显示错误
+
+                    # flag = False循环结束
+                    flag = False
+                    # 任务进行 Gas 区间判定
+                    for i in range(len(ordersL)):
+                        # 判断订单状态'tran_gas_fee_max'是否为空
+                        
+                        if ordersL[i]["trans_gas_fee_max"] == None:
+                            if (len(ordersL[i]["transactions"]) > 0):
+                                # 添加到任务列表
+                                print("订单"+str(i)+"进入任务列表！")
+                                self.taskList.append(ordersL[i])
+                                # 设置 transactions status
+                                print("订单"+str(i)+"状态修改为pending")
+                                self.taskList[-1]["order_exec_status"] = "pending"
+                        if ordersL[i]["trans_gas_fee_max"] != None:
+                            # gas fee 判断
+                            if float(ordersL[i]["trans_gas_fee_max"]) >= suggest:
+                                # 逐个判断
+                                if (len(ordersL[i]["transactions"]) > 0):
+                                    # 添加到任务列表
+                                    print("订单"+str(i)+"进入任务列表！")
+                                    self.taskList.append(ordersL[i])
+                                    # 设置 transactions status
+                                    print("订单"+str(i)+"状态修改为pending")
+                                    self.taskList[-1]["order_exec_status"] = "pending"
+
+
+                    # 显示错误
                 else:
                     # gas 未获取成功
                     print('[错误提示] Gas Fee 获取失败')
-                # 对每个任务进行 Gas 区间判定
-                for i in range(len(ordersL)):
-                    # gas fee 判断
-                    if float(ordersL[i]['trans_gas_fee_max']) <= suggest:
-                        # 逐个判断
-                        if (len(ordersL[i]['transactions']) > 0):
-                            # 添加到任务列表
-                            self.taskList.append(ordersL[i])
-                            # 设置 transactions status
-                            # 
+                    # 继续循环获取gas
+                    flag = True
+
             # 解锁
             finally:
-                # 释放锁
+            # 释放锁
                 self.lock.release()
-    
+        
     # 任务列表地址数统计
     def taskCount(self):
         # 加锁
@@ -88,10 +124,57 @@ class Tasks:
             # 释放锁
             self.lock.release()
     
-    # 无充值转账任务: 将需要完成的任务按照任务比例分配 Gas
+    # 将获得的列表打成包,每N个交易打成一个包,将数据构建成交易所需的形式
+    def taskpacking(self, N=5):
+        if N<0:
+            print("N can't be negative")
+            exit()
+        # 将各任务的交易都放进去，同时每个交易包含"order_create_addr"
+        # 加锁
+        self.lock.acquire()
+        #尝试
+        try:
+            print("-----------------------------\n将交易分配成包")
+            transactions = []
+            for order in self.taskList:
+                if order != None: 
+                    for transaction in order["transactions"]:
+                        # 交易信息中加入"order_create_addr"
+                        transaction["order_create_addr"] = order["order_create_addr"]
+                        transactions.append(transaction)
+
+            #print("展示 transactions")
+            #print(transactions)
+            transaction_num = len(transactions)
+            pack_num = math.ceil(transaction_num/N)
+
+            for i in range(pack_num):
+                # 检查这是是否是最后一个包
+                if i < pack_num-1:
+                    print("打包：第"+str(i+1)+"个包")
+                    self.packinglist.append(transactions[i*N : (i+1)*N])
+                # 检查这是是否是最后一个包
+                if i == pack_num-1:
+                    print("打包：第"+str(i+1)+"个包")
+                    self.packinglist.append(transactions[i*N: ])
+
+            print("展示packinglist！")
+            #print(self.packinglist)
+            print("------------------------------")
+            # 释放锁
+
+        # 解锁
+        finally:
+            # 释放锁
+            self.lock.release()  
+          
+
+    # 无充值转账任务: 将需要完成的任务按照任务比例分配 Gas，并且完成转账 
     def inputTrans(self):
+        print("----------------------------\n将打包的交易形成合约并发送")
         # 循环获取 Gas
-        while True:
+        flag = True
+        while flag:
             # 等待延迟
             time.sleep(taskLoopDelay)
             # 加锁
@@ -103,11 +186,23 @@ class Tasks:
                 # 合约实例
                 contractItem = w3.eth.contract(address=taskContAddr, abi=taskContAbi)
                 # 逐个订单打包
-                for i in range(len(self.taskList)):
-                    # 计算 Gas
+                for i in range(len(self.packinglist)):
+
+                    # 计算交易所需的信息
+                    inputTokenArg = [x['token_contract'] for x in self.packinglist[i] ]
+                    inputFromArg = [x['from_addr'] for x in self.packinglist[i] ]
+                    inputToArg = [x['to_addr'] for x in self.packinglist[i] ]
+                    inputAmountArg = [float(x['token_amount']) for x in self.packinglist[i] ]
+                    print("展示inputAmountArg")
+                    print(inputAmountArg)
+                    #计算 Gas
                     gasLimit = getGasLimit(w3, contractItem, taskFuncName, [inputTokenArg, inputFromArg, inputToArg, inputAmountArg], 0, taskFromAddr, taskContAddr)
                     # 调用结果
                     transBasic(w3, contractItem, taskFuncName, inputTokenArg, inputFromArg, inputToArg, inputAmountArg, taskChainId, gasPrice, gasLimit)
+                    # 根据调用结果计算各用户承担的gas费
+                    # 如何计算
+                    # flag = False 打包的交易构成智能合约已经完成并且上传到链上
+                    flag = False
             # 解锁
             finally:
                 # 释放锁
@@ -123,6 +218,9 @@ class Tasks:
             self.taskList = []
             # 清空任务字典
             self.taskOwner = {}
+            # 清空交易包裹
+            self.packinglist = []
+            
         # 解锁
         finally:
             # 释放锁
@@ -135,3 +233,6 @@ if __name__ == '__main__':
     task = Tasks()
     # 循环任务分配
     task.taskAssignByGas()
+    task.taskpacking()
+    task.inputTrans()
+    task.cleanTask()
