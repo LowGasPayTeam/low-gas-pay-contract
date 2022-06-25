@@ -14,7 +14,7 @@ Transfer and trade with low Gas.
 3. 第三阶段: 2022.06.19 - 2022.07.02
 
 ## 开发人员
-1. 合约底层开发: Wiger, Soth
+1. 合约底层开发: Wiger, Soth, kkwyy
 2. 网页前端开发: Locky
 3. 网页后端开发: 爆爆, Bill
 
@@ -67,10 +67,10 @@ Transfer and trade with low Gas.
   - k. 确认按钮
 
 5. 订单列表:
-  a. 查看当前钱包下订单列表
-  b. 修改转账金额
-  c. 修改预期 Gas
-  d. 删除订单
+    a. 查看当前钱包下订单列表
+    b. 修改转账金额
+    c. 修改预期 Gas
+    d. 删除订单
 
 ## 网页后端开发
 1. 钱包账户验证
