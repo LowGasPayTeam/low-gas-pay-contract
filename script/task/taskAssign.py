@@ -54,7 +54,7 @@ class Tasks:
             self.lock.acquire()
             # 尝试任务分配
             try:
-            # 获取任务列表
+                # 获取任务列表
                 ordersL = getOrders()
                 # 获取 Gas
                 gasRes = getGasOracle()
@@ -75,7 +75,6 @@ class Tasks:
                     # 任务进行 Gas 区间判定
                     for i in range(len(ordersL)):
                         # 判断订单状态'tran_gas_fee_max'是否为空
-                        
                         if ordersL[i]["trans_gas_fee_max"] == None:
                             if (len(ordersL[i]["transactions"]) > 0):
                                 # 添加到任务列表
@@ -126,7 +125,7 @@ class Tasks:
     
     # 将获得的列表打成包,每N个交易打成一个包,将数据构建成交易所需的形式
     def taskpacking(self, N=5):
-        if N<0:
+        if N < 0:
             print("N can't be negative")
             exit()
         # 将各任务的交易都放进去，同时每个交易包含"order_create_addr"
@@ -151,15 +150,15 @@ class Tasks:
             for i in range(pack_num):
                 # 检查这是是否是最后一个包
                 if i < pack_num-1:
-                    print("打包：第"+str(i+1)+"个包")
+                    print("打包: 第"+str(i+1)+"个包")
                     self.packinglist.append(transactions[i*N : (i+1)*N])
                 # 检查这是是否是最后一个包
                 if i == pack_num-1:
-                    print("打包：第"+str(i+1)+"个包")
+                    print("打包: 第"+str(i+1)+"个包")
                     self.packinglist.append(transactions[i*N: ])
 
-            print("展示packinglist！")
-            #print(self.packinglist)
+            print("展示 packinglist")
+            print(self.packinglist)
             print("------------------------------")
             # 释放锁
 
@@ -187,19 +186,18 @@ class Tasks:
                 contractItem = w3.eth.contract(address=taskContAddr, abi=taskContAbi)
                 # 逐个订单打包
                 for i in range(len(self.packinglist)):
-
                     # 计算交易所需的信息
                     inputTokenArg = [x['token_contract'] for x in self.packinglist[i] ]
                     inputFromArg = [x['from_addr'] for x in self.packinglist[i] ]
                     inputToArg = [x['to_addr'] for x in self.packinglist[i] ]
                     inputAmountArg = [float(x['token_amount']) for x in self.packinglist[i] ]
-                    print("展示inputAmountArg")
+                    print("展示 inputAmountArg")
                     print(inputAmountArg)
-                    #计算 Gas
+                    # 计算 Gas
                     gasLimit = getGasLimit(w3, contractItem, taskFuncName, [inputTokenArg, inputFromArg, inputToArg, inputAmountArg], 0, taskFromAddr, taskContAddr)
                     # 调用结果
                     transBasic(w3, contractItem, taskFuncName, inputTokenArg, inputFromArg, inputToArg, inputAmountArg, taskChainId, gasPrice, gasLimit)
-                    # 根据调用结果计算各用户承担的gas费
+                    # 根据调用结果计算各用户承担的 gas 费
                     # 如何计算
                     # flag = False 打包的交易构成智能合约已经完成并且上传到链上
                     flag = False
@@ -231,11 +229,15 @@ class Tasks:
 if __name__ == '__main__':
     # 任务
     task = Tasks()
-    # 循环任务分配
-    task.taskAssignByGas()
-    task.taskpacking()
-    task.inputTrans()
-    task.cleanTask()
+    # 循环
+    while True:
+        # 循环任务分配
+        task.taskAssignByGas()
+        task.taskpacking()
+        task.inputTrans()
+        task.cleanTask()
+        # 等待
+        time.sleep(2)
 
 
 # 1. A: 3, B: 5, C: 10
