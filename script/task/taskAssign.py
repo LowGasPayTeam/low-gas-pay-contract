@@ -11,6 +11,7 @@ from gasTracker import *
 from apiRequest import *
 from taskConfig import *
 from transWithGas import *
+from transConfig import *
 # from web3 import Web3
 # from web3.providers import HTTPProvider
 import threading
@@ -190,12 +191,19 @@ class Tasks:
                     inputTokenArg = [x['token_contract'] for x in self.packinglist[i] ]
                     inputFromArg = [x['from_addr'] for x in self.packinglist[i] ]
                     inputToArg = [x['to_addr'] for x in self.packinglist[i] ]
-                    inputAmountArg = [float(x['token_amount']) for x in self.packinglist[i] ]
+                    ercItem = w3.eth.contract(address=inputTokenArg[0],abi=erc20Abi)
+                    decimal = 'ether' if  ercItem.functions.decimals().call() ==18 else  'mwei'
+                   
+                    inputAmountArg = [w3.toWei(x['token_amount'],decimal) for x in self.packinglist[i] ]
+            
                     print("展示 inputAmountArg")
-                    print(inputAmountArg)
+                    print((inputAmountArg))
                     # 计算 Gas
-                    gasLimit = getGasLimit(w3, contractItem, taskFuncName, [inputTokenArg, inputFromArg, inputToArg, inputAmountArg], 0, taskFromAddr, taskContAddr)
+          
+                    gasLimit = getGasLimit(w3, contractItem, taskFuncName,[inputTokenArg, inputFromArg, inputToArg, inputAmountArg], 0, taskFromAddr, taskContAddr)
                     # 调用结果
+                    print(gasLimit)
+                    exit()
                     transBasic(w3, contractItem, taskFuncName, inputTokenArg, inputFromArg, inputToArg, inputAmountArg, taskChainId, gasPrice, gasLimit)
                     # 根据调用结果计算各用户承担的 gas 费
                     # 如何计算

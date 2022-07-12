@@ -3,7 +3,7 @@ from traceback import print_tb
 from matplotlib.font_manager import json_load
 from web3 import Web3
 from web3.providers import HTTPProvider
-from transConfig import *
+from transConfig_NFT import *
 from collections import Counter
 import requests
 import json
@@ -153,4 +153,4 @@ if __name__ == '__main__':
     #nft转账测试
     nftgas = getNFTGas()
     print(nftgas)
-    transMultiNft(nftArg,nftFrom,nftTo,nftId,nftgas)
+    # transMultiNft(nftArg,nftFrom,nftTo,nftId,nftgas)
